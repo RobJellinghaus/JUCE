@@ -26,6 +26,12 @@
 
 namespace juce
 {
+	// TODO RJELLING: hack modifications to JUCE to log why it behaves differently under Unity.
+	// These are not even implemented by JUCE at all!
+	// Return true if a log message should be emitted now.
+	bool NowSound_CheckLogThrottle();
+	// Log a message (ideally, only after checking the log throttle).
+	void NowSound_Log(const std::wstring& str);
 
 //==============================================================================
 /**

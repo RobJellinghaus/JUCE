@@ -30,15 +30,31 @@ namespace juce
 template <typename FloatType>
 struct GraphRenderSequence
 {
-    GraphRenderSequence() {}
+public:
+	struct Context
+	{
+		FloatType** audioBuffers;
+		MidiBuffer* midiBuffers;
+		AudioPlayHead* audioPlayHead;
+		int numSamples;
+	};
 
-    struct Context
-    {
-        FloatType** audioBuffers;
-        MidiBuffer* midiBuffers;
-        AudioPlayHead* audioPlayHead;
-        int numSamples;
-    };
+private:
+	//==============================================================================
+	struct RenderingOp
+	{
+		RenderingOp() noexcept {}
+		virtual ~RenderingOp() {}
+		virtual void perform(const Context&) = 0;
+		virtual std::wstring describe() const = 0;
+
+		JUCE_LEAK_DETECTOR(RenderingOp)
+	};
+
+	OwnedArray<RenderingOp> renderOps;
+
+public:
+    GraphRenderSequence() {}
 
     void perform (AudioBuffer<FloatType>& buffer, MidiBuffer& midiMessages, AudioPlayHead* audioPlayHead)
     {
@@ -67,6 +83,21 @@ struct GraphRenderSequence
         currentAudioOutputBuffer.clear();
         currentMidiInputBuffer = &midiMessages;
         currentMidiOutputBuffer.clear();
+
+		if (NowSound_CheckLogThrottle())
+		{
+			std::wstringstream wstr{};
+			wstr << L"AudioProcessorGraph::GraphRenderSequence::perform(): renderOps.size() " << renderOps.size();
+			NowSound_Log(wstr.str());
+
+			for (auto* op : renderOps)
+			{
+				std::wstringstream wstr2{};
+				std::wstring desc = op->describe();
+				wstr2 << L"Op: " << desc;
+				NowSound_Log(wstr2.str());
+			}
+		}
 
         {
             const Context context { renderingBuffer.getArrayOfWritePointers(), midiBuffers.begin(), audioPlayHead, numSamples };
@@ -172,20 +203,9 @@ struct GraphRenderSequence
     Array<MidiBuffer> midiBuffers;
     MidiBuffer tempMIDI;
 
-private:
-    //==============================================================================
-    struct RenderingOp
-    {
-        RenderingOp() noexcept {}
-        virtual ~RenderingOp() {}
-        virtual void perform (const Context&) = 0;
-
-        JUCE_LEAK_DETECTOR (RenderingOp)
-    };
-
-    OwnedArray<RenderingOp> renderOps;
-
-    //==============================================================================
+	inline static const std::wstring LambdaOpName = L"LambdaOp";
+	
+	//==============================================================================
     template <typename LambdaType>
     void createOp (LambdaType&& fn)
     {
@@ -194,7 +214,9 @@ private:
             LambdaOp (LambdaType&& f) : function (std::move (f)) {}
             void perform (const Context& c) override    { function (c); }
 
-            LambdaType function;
+			std::wstring describe() const override { return LambdaOpName; }
+
+			LambdaType function;
         };
 
         renderOps.add (new LambdaOp (std::move (fn)));
@@ -225,7 +247,9 @@ private:
             }
         }
 
-        HeapBlock<FloatType> buffer;
+		std::wstring describe() const override { return L"DelayOp"; }
+
+		HeapBlock<FloatType> buffer;
         const int channel, bufferSize;
         int readIndex = 0, writeIndex;
 
@@ -265,7 +289,14 @@ private:
                 callProcess (buffer, c.midiBuffers[midiBufferToUse]);
         }
 
-        void callProcess (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
+		std::wstring describe() const override
+		{ 
+			std::wstringstream wstr;
+			wstr << L"ProcessOp: " << processor.getName();
+			return wstr.str();
+		}
+
+		void callProcess (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
         {
             if (processor.isUsingDoublePrecision())
             {
