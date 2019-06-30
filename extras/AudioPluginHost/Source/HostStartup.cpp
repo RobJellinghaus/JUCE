@@ -152,3 +152,9 @@ bool isOnTouchDevice()                            { return Desktop::getInstance(
 
 // This kicks the whole thing off..
 START_JUCE_APPLICATION (PluginHostApp)
+
+namespace juce
+{
+	bool NowSound_CheckLogThrottle() { return false; } // RJELLING LOGGING HACK
+	void NowSound_Log(const std::wstring& arg) { } // RJELLING LOGGING HACK
+}

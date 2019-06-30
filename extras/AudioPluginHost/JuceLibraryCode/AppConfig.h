@@ -75,7 +75,7 @@
 #endif
 
 #ifndef    JUCE_ASIO
- //#define JUCE_ASIO 0
+ #define JUCE_ASIO 1
 #endif
 
 #ifndef    JUCE_WASAPI
@@ -141,19 +141,19 @@
 // juce_audio_processors flags:
 
 #ifndef    JUCE_PLUGINHOST_VST
- //#define JUCE_PLUGINHOST_VST 0
+ #define JUCE_PLUGINHOST_VST 1
 #endif
 
 #ifndef    JUCE_PLUGINHOST_VST3
- #define   JUCE_PLUGINHOST_VST3 1
+ //#define   JUCE_PLUGINHOST_VST3 0
 #endif
 
 #ifndef    JUCE_PLUGINHOST_AU
- #define   JUCE_PLUGINHOST_AU 1
+ //#define   JUCE_PLUGINHOST_AU 0
 #endif
 
 #ifndef    JUCE_PLUGINHOST_LADSPA
- #define   JUCE_PLUGINHOST_LADSPA 1
+ //#define   JUCE_PLUGINHOST_LADSPA 0
 #endif
 
 //==============================================================================

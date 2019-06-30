@@ -52,8 +52,8 @@ namespace Vst2
 // paths or use the "VST (Legacy) SDK Folder" field in the Projucer. The VST2
 // SDK can be obtained from the vstsdk3610_11_06_2018_build_37 (or older) VST3
 // SDK or JUCE version 5.3.2.
-#include <pluginterfaces/vst2.x/aeffect.h>
-#include <pluginterfaces/vst2.x/aeffectx.h>
+#include <aeffect.h>
+#include <aeffectx.h>
 }
 
 #include "juce_VSTCommon.h"
@@ -3093,27 +3093,33 @@ private:
         if (auto* peer = getTopLevelComponent()->getPeer())
             setScaleFactorAndDispatchMessage (peer->getPlatformScaleFactor());
 
-       #if JUCE_WINDOWS && JUCE_WIN_PER_MONITOR_DPI_AWARE
+/* RJELLING
+	   #if JUCE_WINDOWS && JUCE_WIN_PER_MONITOR_DPI_AWARE
         std::unique_ptr<ScopedDPIAwarenessDisabler> dpiDisabler;
 
         if (! pluginRespondsToDPIChanges)
             dpiDisabler.reset (new ScopedDPIAwarenessDisabler());
        #endif
+*/
 
         Vst2::ERect* rect = nullptr;
         dispatch (Vst2::effEditGetRect, 0, 0, &rect, 0);
 
+/*
        #if JUCE_WINDOWS && JUCE_WIN_PER_MONITOR_DPI_AWARE
         // some plug-ins are fussy about this
         dpiDisabler.reset (nullptr);
        #endif
+*/
 
         dispatch (Vst2::effEditOpen, 0, 0, getWindowHandle(), 0);
 
+/*
        #if JUCE_WINDOWS && JUCE_WIN_PER_MONITOR_DPI_AWARE
         if (! pluginRespondsToDPIChanges)
             dpiDisabler.reset (new ScopedDPIAwarenessDisabler());
        #endif
+*/
 
         // do this before and after like in the steinberg example
         dispatch (Vst2::effEditGetRect, 0, 0, &rect, 0);
@@ -3144,9 +3150,11 @@ private:
 
         #pragma warning (pop)
 
+/*
        #if JUCE_WIN_PER_MONITOR_DPI_AWARE
         dpiDisabler.reset (nullptr);
        #endif
+*/
 
         RECT r;
         GetWindowRect (pluginHWND, &r);
@@ -3467,10 +3475,11 @@ AudioProcessorEditor* VSTPluginInstance::createEditor()
 // entry point for all callbacks from the plugin
 static pointer_sized_int VSTCALLBACK audioMaster (Vst2::AEffect* effect, int32 opcode, int32 index, pointer_sized_int value, void* ptr, float opt)
 {
+/* screw callbacks from the plugin -- RJELLING
     if (effect != nullptr)
         if (auto* instance = (VSTPluginInstance*) (effect->resvd2))
             return instance->handleCallback (opcode, index, value, ptr, opt);
-
+*/
     return VSTPluginInstance::handleGeneralCallback (opcode, index, value, ptr, opt);
 }
 

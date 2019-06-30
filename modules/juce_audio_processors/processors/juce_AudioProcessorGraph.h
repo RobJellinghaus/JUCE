@@ -383,6 +383,9 @@ public:
     void getStateInformation (juce::MemoryBlock&) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+	// RJELLING HACK: this should be private; changed it to public to work around message pump problems 
+	// running JUCE as a native P/Invoke plugin under Unity, but *not* a native Unity plugin under Unity
+	void handleAsyncUpdate() override;
 private:
     //==============================================================================
     ReferenceCountedArray<Node> nodes;
@@ -398,7 +401,6 @@ private:
     Atomic<int> isPrepared { 0 };
 
     void topologyChanged();
-    void handleAsyncUpdate() override;
     void clearRenderingSequence();
     void buildRenderingSequence();
     bool anyNodesNeedPreparing() const noexcept;
