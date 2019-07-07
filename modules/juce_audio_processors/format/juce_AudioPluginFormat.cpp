@@ -187,7 +187,7 @@ void AudioPluginFormat::createPluginInstanceAsync (const PluginDescription& desc
             completion (instance, error);
         }
 
-        std::function<void (AudioPluginInstance*, const String&)> completion;
+		std::function<void(AudioPluginInstance*, const String&)> completion;
     };
 
     createPluginInstanceAsync (description, initialSampleRate, initialBufferSize, new CallbackInvoker (f));

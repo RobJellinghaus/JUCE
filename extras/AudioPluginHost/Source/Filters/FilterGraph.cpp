@@ -89,7 +89,7 @@ void FilterGraph::addPlugin (const PluginDescription& desc, Point<double> p)
 
         FilterGraph& owner;
         Point<double> position;
-    };
+	};
 
     formatManager.createPluginInstanceAsync (desc,
                                              graph.getSampleRate(),
